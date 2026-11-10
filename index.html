@@ -65,7 +65,9 @@ table.dates td.k{background:#8f8f8f;color:#111;letter-spacing:.5em;width:50%;fon
 .sg .lab{grid-column:3;justify-content:center;font-weight:800;font-size:14px;border-right:1px solid var(--line)}
 .sg .val{grid-column:4}
 .sg .cut{border-bottom:2px solid var(--line)}
+.sg .last{border-bottom:0}
 .sg .g2.cut{border-bottom:2px solid var(--line)}
+.sg .g2.last{border-bottom:0}
 .vt{display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:13.5px;line-height:1.28}
 .vt.s{font-size:12.5px}
 .other{display:grid;grid-template-columns:9.5mm 1fr;border:2px solid var(--line);border-top:0;min-height:35mm;font-size:13.5px}
@@ -102,8 +104,8 @@ table.dates td.k{background:#8f8f8f;color:#111;letter-spacing:.5em;width:50%;fon
 .gband{background:var(--slate);color:#fff;text-align:center;font-weight:700;font-size:15px;border:3px solid #c3c3c3;padding:.4mm 0;margin-bottom:0;line-height:1.5}
 .zl .gband{margin-bottom:0}
 .env{display:grid;grid-template-columns:36% 1fr;border:2px solid var(--line);font-size:11.5px}
-.env>div{border-top:2px solid var(--line);padding:1px 4px;min-height:9mm;display:flex;align-items:center}
-.env .t{grid-column:1/3;border-top:0;justify-content:center;min-height:11mm;font-size:13px}
+.env>div{border-top:2px solid var(--line);padding:1px 4px;min-height:8.8mm;display:flex;align-items:center}
+.env .t{grid-column:1/3;border-top:0;justify-content:center;min-height:10.6mm;font-size:13px}
 .env .k{justify-content:center;border-right:2px solid var(--line);font-size:12.5px}
 .zr .gband.s{width:58%;margin-top:2.4mm}
 .zr .photo{width:58%;aspect-ratio:1.48}
@@ -215,7 +217,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
   function coverHTML(){
     var rows="";
     ROWS.forEach(function(r,i){
-      var cut=(i===8||i===13)?" cut":"";
+      var cut=(i===8)?" cut":(i===13?" last":"");
       rows+='<div class="lab'+cut+'" style="grid-row:'+(i+1)+'" contenteditable>'+r[0]+'</div><div class="val'+cut+'" style="grid-row:'+(i+1)+'" contenteditable>'+r[1]+'</div>';
     });
     return '<table class="code"><tr><td class="l" style="width:17%" contenteditable data-f="0" data-ph="邸コード：">邸コード：</td><td style="width:41%" contenteditable data-f="1">北海道以外･戸建</td><td style="width:9%" contenteditable data-f="2">ハイム</td><td style="width:10%" contenteditable data-f="3">25年診断</td><td style="width:23%" contenteditable data-f="4">26.01.001版</td></tr>'+
@@ -227,7 +229,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
       '<div class="gbar" style="margin-top:3mm"></div>'+
       '<div class="gtitle">総合所見</div>'+
       '<div class="sg"><div class="g1">'+vt("メンテナンス")+'</div>'+
-        '<div class="g2 cut" style="grid-row:1/10">'+vt("建物","s")+'</div><div class="g2 cut" style="grid-row:10/15">'+vt("設備","s")+'</div>'+rows+'</div>'+
+        '<div class="g2 cut" style="grid-row:1/10">'+vt("建物","s")+'</div><div class="g2 last" style="grid-row:10/15">'+vt("設備","s")+'</div>'+rows+'</div>'+
       '<div class="other"><div class="g1">'+vt("その他")+'</div><div class="body"><div contenteditable>いつもご愛顧いただき誠にありがとうございます。お困り事(故障・水漏れ含)はなんでもご相談ください。なお、定期診断での確認は目視中心のため、確認しきれない箇所もございます。ご了承ください。</div></div></div>'+
       '<div class="cfoot">東京セキスイファミエス株式会社 <span contenteditable>東京支店 東京西営業所</span> (診断担当　<span class="nm" contenteditable data-ph="担当者名"></span>)</div>'+
       '<div class="cfoot2"><div class="t"><b>オーナー様総合サイト</b><i>https://www.sekisuiheim-owner.jp</i></div><div class="qr qr1"></div>'+
