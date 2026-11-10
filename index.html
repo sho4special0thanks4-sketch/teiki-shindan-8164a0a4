@@ -342,7 +342,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     }
     /* 表紙の型式欄が書き換わったら、各ページの上部も更新する */
     var heads=doc.querySelectorAll(".pg-head .code td");
-    if(heads.length&&heads[0].textContent!==hf(1))return true;
+    if(heads.length&&(heads[0].textContent!==hf(1)||heads[1].textContent!==hf(2)||heads[2].textContent!==hf(3)||heads[3].textContent!==hf(4)||heads[4].textContent!==hf(5)))return true;
     return false;
   }
 
@@ -428,14 +428,17 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     var LISTS={
       res:["異常ありません。",MAINT,DUE],
       note:[DEF_NOTE,"特に必要ありません。",MAINT,DUE],
-      sum:["異常ありません。ご安心下さい。","異常ありません。5年後がメンテナンスの時期です。",MAINT,DUE]
+      sum:["異常ありません。ご安心下さい。","異常ありません。5年後がメンテナンスの時期です。",MAINT,DUE],
+      year:[20,25,30,35,40,45,50,55,60].map(function(n){return n+"年診断"})
     };
-    var TITLES={res:"診断結果の定型文",note:"所見の定型文",sum:"総合所見の定型文"};
+    var TITLES={res:"診断結果の定型文",note:"所見の定型文",sum:"総合所見の定型文",year:"診断の年数を選ぶ（表題の「◯年目」も同時に変わります）"};
+    var BTN={res:"▼ 定型文",note:"▼ 定型文",sum:"▼ 定型文",year:"▼ 年数"};
     var btn=document.createElement("button");btn.id="tmplBtn";btn.type="button";btn.textContent="▼ 定型文";document.body.appendChild(btn);
     var menu=document.createElement("div");menu.id="tmplMenu";document.body.appendChild(menu);
     var cur=null,hideT=null;
     function kind(el){
       if(!el||!el.matches)return null;
+      if(el.matches('[data-f="3"]'))return "year";
       if(el.matches(".sg .val"))return "sum";
       if(el.matches(".dg .in>div:nth-child(4)"))return "res";
       if(el.matches(".dg .in>div:nth-child(6)"))return "note";
@@ -445,18 +448,19 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
       if(!cur||!document.body.contains(cur)){btn.style.display="none";return}
       var r=cur.getBoundingClientRect();
       if(r.bottom<0||r.top>innerHeight){btn.style.display="none";return}
+      btn.textContent=BTN[kind(cur)]||"▼ 定型文";
       btn.style.display="block";
       var w=btn.offsetWidth,h=btn.offsetHeight;
       btn.style.left=Math.max(4,Math.min(innerWidth-w-4,r.right-w-3))+"px";
       var tall=r.height>h*2.2;
-      btn.style.top=Math.max(4,tall?r.bottom-h-3:r.top+(r.height-h)/2)+"px";
+      btn.style.top=Math.max(4,kind(cur)==="year"?r.bottom+3:(tall?r.bottom-h-3:r.top+(r.height-h)/2))+"px";
     }
     function closeMenu(){menu.style.display="none"}
     function openMenu(){
       var k=kind(cur);if(!k)return;
-      menu.innerHTML='<div class="ttl">'+TITLES[k]+'（選ぶとこの欄の文章が入れ替わります）</div>'+
+      menu.innerHTML='<div class="ttl">'+TITLES[k]+(k==="year"?"":"（選ぶとこの欄の文章が入れ替わります）")+'</div>'+
         LISTS[k].map(function(t,i){return '<button type="button" data-i="'+i+'">'+esc(t)+'</button>'}).join("")+
-        '<button type="button" class="clr" data-i="-1">この欄の文章を消す</button>';
+        (k==="year"?"":'<button type="button" class="clr" data-i="-1">この欄の文章を消す</button>');
       menu.style.display="block";
       var br=btn.getBoundingClientRect(),mh=menu.offsetHeight,mw=menu.offsetWidth;
       menu.style.left=Math.max(4,Math.min(innerWidth-mw-4,br.right-mw))+"px";
@@ -471,6 +475,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
       var b=e.target.closest("button[data-i]");if(!b||!cur)return;
       var i=+b.getAttribute("data-i"),k=kind(cur);
       cur.textContent=i<0?"":LISTS[k][i];
+      if(k==="year"){var ty=cover.querySelector('[data-f="t"]');if(ty)ty.textContent=ty.textContent.replace(/^\s*\d+\s*年目/,parseInt(LISTS[k][i],10)+"年目")}
       cur.focus();
       var rg=document.createRange();rg.selectNodeContents(cur);rg.collapse(false);var sl=getSelection();sl.removeAllRanges();sl.addRange(rg);
       cur.dispatchEvent(new Event("input",{bubbles:true}));
