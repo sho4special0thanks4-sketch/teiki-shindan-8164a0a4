@@ -233,7 +233,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     });
     return '<table class="code"><tr><td class="l" style="width:17%" contenteditable data-f="0" data-ph="邸コード：">邸コード：</td><td style="width:41%" contenteditable data-f="1">北海道以外･戸建</td><td style="width:9%" contenteditable data-f="2">ハイム</td><td style="width:10%" contenteditable data-f="3">25年診断</td><td style="width:23%" contenteditable data-f="4">26.01.001版</td></tr>'+
       '<tr><td class="l" colspan="5" contenteditable data-f="5" data-ph="外壁・屋根の仕様（例：デュラストーン　陸屋根(鋼板)）"></td></tr></table>'+
-      '<div class="ctitle"><span contenteditable data-ph="お客様名" data-f="n"></span>　様邸　<span contenteditable data-f="t" style="min-width:0">25年目定期診断ご報告書</span></div>'+
+      '<div class="ctitle"><span contenteditable data-ph="お客様名" data-f="n"></span>　様邸　<span data-f="t" style="min-width:0">25年目定期診断ご報告書</span></div>'+
       '<div class="gbar"></div>'+
       '<div class="cmain">'+photoHTML("外観写真をタップして追加")+
         '<table class="dates"><tr><td class="k">診　断　日</td><td contenteditable data-ph="2026/07/23">'+today()+'</td></tr><tr><td class="k">お引渡し日</td><td contenteditable data-ph="2001/11/09"></td></tr></table></div>'+
@@ -283,6 +283,14 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
   }
 
   /* ---------- A4ページ割り（2ページ目以降） ---------- */
+  /* 表題の「◯年目定期診断ご報告書」は固定。年数は型式欄の「◯年診断」に連動する */
+  function syncTitle(){
+    var ty=cover.querySelector('[data-f="t"]'),yc=cover.querySelector('[data-f="3"]');
+    if(!ty)return;
+    var m=yc&&yc.textContent.match(/\d+/);
+    ty.removeAttribute("contenteditable");
+    ty.textContent=(m?m[0]:"25")+"年目定期診断ご報告書";
+  }
   function hf(n){var e=cover.querySelector('[data-f="'+n+'"]');return e?e.textContent:""}
   function newPage(){
     var s=document.createElement("section");s.className="sheet pg";
@@ -370,6 +378,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     var z=Math.min(1,w/a4);
     root.style.zoom=z<1?z:"";
   }
+  syncTitle();
   fit();window.addEventListener("resize",fit);window.addEventListener("orientationchange",fit);
   paginate();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){paginate()});
@@ -408,6 +417,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     if(a==="delEntry"){if(confirm("この写真と診断欄を削除します。よろしいですか？")){blk.remove();paginate();save()}}
     if(a==="delSec"){if(confirm("この見出しの写真・診断欄をすべて削除します。よろしいですか？")){var sid=blk.getAttribute("data-sid");[].slice.call(doc.querySelectorAll(".blk")).forEach(function(b){if(b.getAttribute("data-sid")===sid)b.remove()});paginate();save()}}
   });
+  root.addEventListener("input",function(e){if(e.target.closest&&e.target.closest('[data-f="3"]'))syncTitle()});
   root.addEventListener("input",later);
   root.addEventListener("paste",function(e){
     if(e.target.isContentEditable){e.preventDefault();var s=(e.clipboardData||window.clipboardData).getData("text/plain");document.execCommand("insertText",false,s)}
@@ -429,16 +439,22 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
       res:["異常ありません。",MAINT,DUE],
       note:[DEF_NOTE,"特に必要ありません。",MAINT,DUE],
       sum:["異常ありません。ご安心下さい。","異常ありません。5年後がメンテナンスの時期です。",MAINT,DUE],
+      e1:["南側、高層建物及び山林等無い為、日当り良好","南側に高層建物があり、日当りに影響あり","南側に山林等があり、日当りに影響あり"],
+      e2:["川、沼、海等隣接無し","川、沼、海等隣接あり","川隣接","沼隣接","海隣接"],
+      e3:["道路(交通量少ない)隣接","道路(交通量多い)隣接","鉄道隣接","道路・鉄道隣接無し"],
       year:[20,25,30,35,40,45,50,55,60].map(function(n){return n+"年診断"})
     };
-    var TITLES={res:"診断結果の定型文",note:"所見の定型文",sum:"総合所見の定型文",year:"診断の年数を選ぶ（表題の「◯年目」も同時に変わります）"};
-    var BTN={res:"▼ 定型文",note:"▼ 定型文",sum:"▼ 定型文",year:"▼ 年数"};
+    var TITLES={res:"診断結果の定型文",note:"所見の定型文",sum:"総合所見の定型文",e1:"周辺環境（日当り）の定型文",e2:"周辺環境（川、沼、海）の定型文",e3:"周辺環境（道路、鉄道）の定型文",year:"診断の年数を選ぶ（表題の「◯年目」も同時に変わります）"};
+    var BTN={res:"▼ 定型文",note:"▼ 定型文",sum:"▼ 定型文",year:"▼ 年数",e1:"▼ 定型文",e2:"▼ 定型文",e3:"▼ 定型文"};
     var btn=document.createElement("button");btn.id="tmplBtn";btn.type="button";btn.textContent="▼ 定型文";document.body.appendChild(btn);
     var menu=document.createElement("div");menu.id="tmplMenu";document.body.appendChild(menu);
     var cur=null,hideT=null;
     function kind(el){
       if(!el||!el.matches)return null;
       if(el.matches('[data-f="3"]'))return "year";
+      if(el.matches(".env>div:nth-child(3)"))return "e1";
+      if(el.matches(".env>div:nth-child(5)"))return "e2";
+      if(el.matches(".env>div:nth-child(7)"))return "e3";
       if(el.matches(".sg .val"))return "sum";
       if(el.matches(".dg .in>div:nth-child(4)"))return "res";
       if(el.matches(".dg .in>div:nth-child(6)"))return "note";
@@ -475,7 +491,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
       var b=e.target.closest("button[data-i]");if(!b||!cur)return;
       var i=+b.getAttribute("data-i"),k=kind(cur);
       cur.textContent=i<0?"":LISTS[k][i];
-      if(k==="year"){var ty=cover.querySelector('[data-f="t"]');if(ty)ty.textContent=ty.textContent.replace(/^\s*\d+\s*年目/,parseInt(LISTS[k][i],10)+"年目")}
+      if(k==="year")syncTitle();
       cur.focus();
       var rg=document.createRange();rg.selectNodeContents(cur);rg.collapse(false);var sl=getSelection();sl.removeAllRanges();sl.addRange(rg);
       cur.dispatchEvent(new Event("input",{bubbles:true}));
