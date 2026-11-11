@@ -70,7 +70,7 @@ table.dates td.k{background:#8f8f8f;color:#111;letter-spacing:.5em;width:50%;fon
 .sg .g2.last{border-bottom:0}
 .vt{display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:13.5px;line-height:1.28}
 .vt.s{font-size:12.5px}
-.other{display:grid;grid-template-columns:9.5mm 1fr;border:2px solid var(--line);border-top:0;min-height:35mm;font-size:13.5px}
+.other{display:grid;grid-template-columns:9.5mm 1fr;border:2px solid var(--line);border-top:0;height:35mm;min-height:12mm;flex:0 1 auto;font-size:13.5px}
 .other .g1{background:var(--gray);border-right:2px solid var(--line);display:flex;align-items:center;justify-content:center}
 .other .body{display:flex;align-items:center;padding:2px 3px;line-height:1.45}
 .other .body>div{width:100%}
@@ -125,6 +125,17 @@ table.dates td.k{background:#8f8f8f;color:#111;letter-spacing:.5em;width:50%;fon
 .entry .sec-tools{position:absolute;left:4px;top:4px;z-index:3}
 .mini{font:inherit;font-size:12px;border:1px solid #9aa4bb;background:#fff;color:#223;border-radius:5px;padding:2px 8px;cursor:pointer}
 .mini.del{border-color:#d49a9a;color:#a33}
+
+/* 総合所見の行が増えて表紙に入りきらないときの詰め表示 */
+.cover.tight .sg{font-size:12.5px}.cover.tight .sg>div{min-height:4.9mm;line-height:1.3}.cover.tight .sg .lab{font-size:13px}
+.cover.tighter .sg{font-size:12px}.cover.tighter .sg>div{min-height:4.4mm;line-height:1.2}.cover.tighter .sg .lab{font-size:12.5px}
+/* ---- 行の追加・削除（画面のみ） ---- */
+#rowTools{position:fixed;z-index:30;display:none;gap:4px}
+#rowTools button{border:1px solid #2a45c2;background:#fff;color:#2a45c2;border-radius:6px;font:inherit;font-size:12px;line-height:1;padding:5px 8px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+#rowTools button.d{border-color:#c77;color:#a33}
+@media screen and (pointer:coarse){#rowTools button{font-size:15px;padding:9px 12px}}
+@media print{#rowTools{display:none !important}}
+.cap #rowTools{display:none !important}
 
 /* ---- 定型文プルダウン（画面のみ） ---- */
 #tmplBtn{position:fixed;z-index:30;display:none;border:1px solid #2a45c2;background:#fff;color:#2a45c2;border-radius:6px;font:inherit;font-size:12px;line-height:1;padding:5px 8px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)}
@@ -229,7 +240,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     var rows="";
     ROWS.forEach(function(r,i){
       var cut=(i===8)?" cut":(i===13?" last":"");
-      rows+='<div class="lab'+cut+'" style="grid-row:'+(i+1)+'" contenteditable>'+r[0]+'</div><div class="val'+cut+'" style="grid-row:'+(i+1)+'" contenteditable>'+r[1]+'</div>';
+      rows+='<div class="lab'+cut+'" data-g="'+(i<9?"b":"s")+'" style="grid-row:'+(i+1)+'" contenteditable>'+r[0]+'</div><div class="val'+cut+'" style="grid-row:'+(i+1)+'" contenteditable>'+r[1]+'</div>';
     });
     return '<table class="code"><tr><td class="l" style="width:17%" contenteditable data-f="0" data-ph="邸コード：">邸コード：</td><td style="width:41%" contenteditable data-f="1">北海道以外･戸建</td><td style="width:9%" contenteditable data-f="2">ハイム</td><td style="width:10%" contenteditable data-f="3">25年診断</td><td style="width:23%" contenteditable data-f="4">26.01.001版</td></tr>'+
       '<tr><td class="l" colspan="5" contenteditable data-f="5" data-ph="外壁・屋根の仕様（例：デュラストーン　陸屋根(鋼板)）"></td></tr></table>'+
@@ -290,6 +301,32 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     var m=yc&&yc.textContent.match(/\d+/);
     ty.removeAttribute("contenteditable");
     ty.textContent=(m?m[0]:"25")+"年目定期診断ご報告書";
+  }
+  /* 総合所見の行を並べ直す（行の追加・削除のあと） */
+  function relayoutSG(){
+    var sg=cover.querySelector(".sg");if(!sg)return;
+    var labs=[].slice.call(sg.querySelectorAll(".lab"));
+    labs.forEach(function(l,i){if(!l.getAttribute("data-g"))l.setAttribute("data-g",i<9?"b":"s")});
+    var nb=labs.filter(function(l){return l.getAttribute("data-g")==="b"}).length,N=labs.length;
+    labs.forEach(function(l,i){
+      var v=l.nextElementSibling;
+      [l,v].forEach(function(c){c.style.gridRow=String(i+1);c.classList.remove("cut","last");if(i===nb-1)c.classList.add("cut");if(i===N-1)c.classList.add("last")});
+    });
+    var g2=sg.querySelectorAll(".g2"),g1=sg.querySelector(".g1");
+    if(g2[0])g2[0].style.gridRow="1/"+(nb+1);
+    if(g2[1])g2[1].style.gridRow=(nb+1)+"/"+(N+1);
+    if(g1)g1.style.gridRow="1/"+(N+1);
+  }
+  /* 表紙が1枚に入りきらないときは、行間を詰める */
+  function fitCover(){
+    cover.classList.remove("tight","tighter");
+    var over=function(){return cover.scrollHeight>cover.clientHeight+1};
+    if(over()){cover.classList.add("tight");if(over()){cover.classList.add("tighter")}}
+    var warn=document.getElementById("coverWarn");
+    if(over()){
+      if(!warn){warn=document.createElement("span");warn.id="coverWarn";warn.style.cssText="color:#ffd54a;font-size:12px;margin-left:6px";document.getElementById("saveState").after(warn)}
+      warn.textContent="表紙に入りきりません。総合所見の行を減らしてください";
+    }else if(warn){warn.remove()}
   }
   function hf(n){var e=cover.querySelector('[data-f="'+n+'"]');return e?e.textContent:""}
   function newPage(){
@@ -378,10 +415,10 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     var z=Math.min(1,w/a4);
     root.style.zoom=z<1?z:"";
   }
-  syncTitle();
+  relayoutSG();syncTitle();
   fit();window.addEventListener("resize",fit);window.addEventListener("orientationchange",fit);
-  paginate();
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){paginate()});
+  paginate();fitCover();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){paginate();fitCover()});
 
   /* ---------- 写真 ---------- */
   function loadPhoto(label,file){
@@ -507,6 +544,49 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
     document.addEventListener("touchstart",function(e){if(menu.style.display==="block"&&!menu.contains(e.target)&&e.target!==btn)closeMenu()},{passive:true});
     window.addEventListener("scroll",function(){place();closeMenu()},true);
     window.addEventListener("resize",function(){place();closeMenu()});
+  })();
+
+  /* ---------- 総合所見の行の追加・削除 ---------- */
+  (function(){
+    var o=document.getElementById("rowTools");if(o)o.remove();
+    var box=document.createElement("div");box.id="rowTools";
+    box.innerHTML='<button type="button" data-a="add">＋行追加</button><button type="button" class="d" data-a="del">行削除</button>';
+    document.body.appendChild(box);
+    var cur=null,hideT=null;
+    function cellOf(el){return el&&el.closest?el.closest(".sg .lab,.sg .val"):null}
+    function labOf(c){return c.classList.contains("lab")?c:c.previousElementSibling}
+    function place(){
+      if(!cur||!document.body.contains(cur)){box.style.display="none";return}
+      var val=labOf(cur).nextElementSibling,r=val.getBoundingClientRect();
+      if(r.bottom<0||r.top>innerHeight){box.style.display="none";return}
+      box.style.display="flex";
+      var w=box.offsetWidth,h=box.offsetHeight,gap=cur.classList.contains("val")?(document.getElementById("tmplBtn").offsetWidth||70)+10:6;
+      box.style.left=Math.max(4,Math.min(innerWidth-w-4,r.right-w-gap))+"px";
+      box.style.top=Math.max(4,r.top+(r.height-h)/2)+"px";
+    }
+    function sync(){relayoutSG();fitCover();save()}
+    ["mousedown","touchstart"].forEach(function(ev){box.addEventListener(ev,function(e){e.preventDefault()},{passive:false})});
+    box.addEventListener("click",function(e){
+      var b=e.target.closest("button[data-a]");if(!b||!cur)return;
+      var lab=labOf(cur),val=lab.nextElementSibling,sg=lab.parentNode;
+      if(b.getAttribute("data-a")==="add"){
+        val.insertAdjacentHTML("afterend",'<div class="lab" data-g="'+lab.getAttribute("data-g")+'" contenteditable data-ph="項目名"></div><div class="val" contenteditable>異常ありません。ご安心下さい。</div>');
+        sync();
+        var nl=val.nextElementSibling;nl.focus();
+      }else{
+        var g=lab.getAttribute("data-g"),same=[].slice.call(sg.querySelectorAll('.lab[data-g="'+g+'"]')).length;
+        if(same<=1){alert("この区分（"+(g==="b"?"建物":"設備")+"）の最後の1行は削除できません。");return}
+        if(!confirm("「"+(lab.textContent||"この行")+"」の行を削除します。よろしいですか？"))return;
+        lab.remove();val.remove();cur=null;box.style.display="none";sync();
+      }
+      place();
+    });
+    root.addEventListener("focusin",function(e){
+      var c=cellOf(e.target);clearTimeout(hideT);
+      if(c){cur=c;place()}else{cur=null;box.style.display="none"}
+    });
+    root.addEventListener("focusout",function(){clearTimeout(hideT);hideT=setTimeout(function(){if(document.activeElement&&cellOf(document.activeElement))return;cur=null;box.style.display="none"},250)});
+    window.addEventListener("scroll",place,true);window.addEventListener("resize",place);
   })();
 
   document.getElementById("addSec").addEventListener("click",function(){
