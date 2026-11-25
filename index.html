@@ -319,7 +319,7 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
       '<div class="ctitle"><span contenteditable data-ph="お客様名" data-f="n"></span>　様邸　<span data-f="t" style="min-width:0">25年目定期診断ご報告書</span></div>'+
       '<div class="gbar"></div>'+
       '<div class="cmain">'+photoHTML("外観写真をタップして追加")+
-        '<table class="dates"><tr><td class="k">診　断　日</td><td contenteditable data-ph="2026/07/23">'+today()+'</td></tr><tr><td class="k">お引渡し日</td><td contenteditable data-ph="2001/11/09"></td></tr></table></div>'+
+        '<table class="dates"><tr><td class="k">診　断　日</td><td contenteditable data-ph="">'+today()+'</td></tr><tr><td class="k">お引渡し日</td><td contenteditable data-ph=""></td></tr></table></div>'+
       '<div class="gbar" style="margin-top:3mm"></div>'+
       '<div class="gtitle">総合所見</div>'+
       '<div class="sg"><div class="g1">'+vt("メンテナンス")+'</div>'+
@@ -334,9 +334,9 @@ iPadの「ファイル」アプリのプレビューなどでは動きません�
   function zenkeiBlock(){
     return '<div class="blk zenkei" data-sid="zenkei"><div class="zl"><div class="gband">全景</div>'+photoHTML("全景写真を追加")+'</div>'+
       '<div class="zr"><div class="env"><div class="t" contenteditable>周辺環境</div>'+
-      '<div class="k" contenteditable>日当り</div><div contenteditable data-ph="例：南側、高層建物及び山林等無い為、日当り良好"></div>'+
-      '<div class="k" contenteditable>川、沼、海</div><div contenteditable data-ph="例：川、沼、海等隣接無し"></div>'+
-      '<div class="k" contenteditable>道路、鉄道</div><div contenteditable data-ph="例：道路(交通量少ない)隣接"></div></div>'+
+      '<div class="k" contenteditable>日当り</div><div contenteditable data-ph=""></div>'+
+      '<div class="k" contenteditable>川、沼、海</div><div contenteditable data-ph=""></div>'+
+      '<div class="k" contenteditable>道路、鉄道</div><div contenteditable data-ph=""></div></div>'+
       '<div class="gband s">表札</div>'+photoHTML("表札写真を追加")+'</div></div>';
   }
   function bandBlock(sid,title){
